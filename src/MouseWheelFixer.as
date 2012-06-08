@@ -213,8 +213,13 @@ function() {
     }
 }]]>).toString();
 		private static var _stage : Stage;
-		private static var _state : int;
+		private static var _state : int = 0;
 		private static var _browserScroll : Boolean = true;
+
+		public static function get use_native() : Boolean {
+			if (_state == 0) return true;
+			return false;
+		}
 
 		/**
 		 *  initialize the SWFWheel hack.
@@ -232,13 +237,17 @@ function() {
 			// define javascript library.
 			ExternalInterface.call(DEFINE_LIBRARY_FUNCTION);
 			// start light hack.
-			if(!ExternalInterface.objectID){
+			if (!ExternalInterface.objectID) {
 				trace('ERROR: no object id found. be sure swf object has id AND name attribute');
 			}
 			ExternalInterface.call(EXECUTE_LIBRARY_FUNCTION, ExternalInterface.objectID);
 			ExternalInterface.addCallback('checkBrowserScroll', checkBrowserScroll);
 			// get runtime state.
-			_state = ExternalInterface.call(GET_STATE_FUNCTION, ExternalInterface.objectID);
+			if (stage.loaderInfo.loaderURL.substr(0, 5) == "file:") {
+				_state = 0;
+			} else {
+				_state = ExternalInterface.call(GET_STATE_FUNCTION, ExternalInterface.objectID);
+			}
 			// prevent process if no need hack.
 			if (_state == STATE_NATIVE) return;
 			// start deep hack.
